@@ -21,7 +21,7 @@ suricata-update #Установка нового набора правил
 default-rule-path: /var/lib/suricata/rules # директория с библиотекой правил
 rule-files:
   - suricata.rules
-
+suricata-update update-sources #Обновляем индекс источника правил
 suricata -T #Проверка конфигурации
 
 #4.Проверка работы Suricata
@@ -48,7 +48,7 @@ tail -f /var/log/suricata/fast.log #Просмотр лог-файла
 #Создадим новый файл nano /var/lib/suricata/rules/my.rules
 #Добавим в файл «/var/lib/suricata/rules/my.rules» 3 новых правила:
 alert icmp any any -> $HOME_NET any (msg:"ALERT: external ping"; itype:8; classtype:icmp-event; sid:1000001;rev:1;)
-alert tcp $HOME_NET any -> any any (msg:"ALERT: data leak"; content:"it-black.ru"; classtype:misc-activity; sid:1000002;rev:1;)
+alert tcp any any -> any any (msg:"ALERT: data leak"; content:"it-black.ru"; classtype:misc-activity; sid:1000002;rev:1;)
 alert icmp any any -> $HOME_NET any (msg:"ICMP flood inbound,Potential DOS"; dsize:>10000; threshold: type both, track by_dst, count 3, seconds 1; classtype:denial-of-service; sid:1000003;rev:1;)
 
 #Запускаем Suricata с новыми правилами и сохранением логов в текущий каталог:
@@ -73,6 +73,7 @@ curl http://testmynids.org/uid/index.html
 jq 'select(.alert .signature_id==1000001)' /var/lib/suricata/rules/eve.json
 
 #7.Изменение действия правил
-sed -i ‘s/alert/drop/’ /var/lib/suricata/rules/suricata.rules #Команда для изменения действий правил
+sed -i 's/alert/drop/' /var/lib/suricata/rules/suricata.rules #Команда для изменения действий правил на drop
+sed -i 's/drop/alert/' /var/lib/suricata/rules/suricata.rules #Команда для изменения действий правил на alert
 systemctl restart suricata #Перезапуск Suricata
 tail -f /var/log/suricata/fast.log #Проводим атаку и провернем лог-файл
